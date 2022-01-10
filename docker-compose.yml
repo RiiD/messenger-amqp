@@ -1,0 +1,13 @@
+version: "3"
+services:
+  rabbitmq:
+    image: rabbitmq:3.9.12-alpine
+    networks:
+      - messenger-amqp-integration-test
+
+networks:
+  messenger-amqp-integration-test:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/24
