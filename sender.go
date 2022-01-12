@@ -11,10 +11,10 @@ import (
 )
 
 type PublishArgs struct {
-	exchange   string
-	routingKey string
-	mandatory  bool
-	immediate  bool
+	Exchange   string
+	RoutingKey string
+	Mandatory  bool
+	Immediate  bool
 }
 
 func Sender(channel Channel, publishArgs PublishArgs) *sender {
@@ -36,10 +36,10 @@ func (s *sender) Send(_ context.Context, e messenger.Envelope) error {
 	}
 
 	err = s.channel.Publish(
-		s.publishArgs.exchange,
-		s.publishArgs.routingKey,
-		s.publishArgs.mandatory,
-		s.publishArgs.immediate,
+		s.publishArgs.Exchange,
+		s.publishArgs.RoutingKey,
+		s.publishArgs.Mandatory,
+		s.publishArgs.Immediate,
 		msg,
 	)
 

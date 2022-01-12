@@ -14,13 +14,13 @@ var ErrNotAcked = errors.New("envelope is not acked")
 var ErrNotNacked = errors.New("envelope is not nacked")
 
 type ConsumeOptions struct {
-	queue       string
-	consumerTag string
-	autoAck     bool
-	exclusive   bool
-	noLocal     bool
-	noWait      bool
-	args        amqp.Table
+	Queue       string
+	ConsumerTag string
+	AutoAck     bool
+	Exclusive   bool
+	NoLocal     bool
+	NoWait      bool
+	Args        amqp.Table
 }
 
 func Receiver(channel Channel, consumeOptions ConsumeOptions, alias string) *receiver {
@@ -39,13 +39,13 @@ type receiver struct {
 
 func (r *receiver) Receive(ctx context.Context) (<-chan messenger.Envelope, error) {
 	ch, err := r.channel.Consume(
-		r.consumeOptions.queue,
-		r.consumeOptions.consumerTag,
-		r.consumeOptions.autoAck,
-		r.consumeOptions.exclusive,
-		r.consumeOptions.noLocal,
-		r.consumeOptions.noWait,
-		r.consumeOptions.args,
+		r.consumeOptions.Queue,
+		r.consumeOptions.ConsumerTag,
+		r.consumeOptions.AutoAck,
+		r.consumeOptions.Exclusive,
+		r.consumeOptions.NoLocal,
+		r.consumeOptions.NoWait,
+		r.consumeOptions.Args,
 	)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (r *receiver) Receive(ctx context.Context) (<-chan messenger.Envelope, erro
 
 	go func() {
 		<-ctx.Done()
-		_ = r.channel.Cancel(r.consumeOptions.consumerTag, false)
+		_ = r.channel.Cancel(r.consumeOptions.ConsumerTag, false)
 	}()
 
 	envelopes := make(chan messenger.Envelope)
@@ -97,7 +97,7 @@ func (r *receiver) Nack(_ context.Context, e messenger.Envelope) error {
 }
 
 func (r *receiver) Matches(e messenger.Envelope) bool {
-	if r.consumeOptions.autoAck {
+	if r.consumeOptions.AutoAck {
 		return false
 	}
 	val, found := e.LastHeader(receiverAliasHeaderName)

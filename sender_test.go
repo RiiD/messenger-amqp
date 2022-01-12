@@ -46,10 +46,10 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 	ch.On("Publish", "test-exchange", "test-routing-key", false, false, expectedPublishing).Return(nil)
 
 	sender := Sender(ch, PublishArgs{
-		exchange:   "test-exchange",
-		routingKey: "test-routing-key",
-		mandatory:  false,
-		immediate:  false,
+		Exchange:   "test-exchange",
+		RoutingKey: "test-routing-key",
+		Mandatory:  false,
+		Immediate:  false,
 	})
 
 	err := sender.Send(ctx, e)
@@ -73,10 +73,10 @@ func TestSender_Send_when_amqp_publish_fails_should_return_error(t *testing.T) {
 	ch.On("Publish", "test-exchange", "test-routing-key", true, true, expectedPublishing).Return(expectedError)
 
 	sender := Sender(ch, PublishArgs{
-		exchange:   "test-exchange",
-		routingKey: "test-routing-key",
-		mandatory:  true,
-		immediate:  true,
+		Exchange:   "test-exchange",
+		RoutingKey: "test-routing-key",
+		Mandatory:  true,
+		Immediate:  true,
 	})
 
 	err := sender.Send(ctx, e)

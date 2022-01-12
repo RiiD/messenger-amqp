@@ -131,13 +131,13 @@ func startReceiver(ctx context.Context, received chan messenger.Envelope) error 
 		_ = ch.Close()
 	}(ch)
 	r := Receiver(ch, ConsumeOptions{
-		queue:       "receiver.messages",
-		consumerTag: "test-receiver",
-		autoAck:     false,
-		exclusive:   false,
-		noLocal:     false,
-		noWait:      false,
-		args:        nil,
+		Queue:       "receiver.messages",
+		ConsumerTag: "test-receiver",
+		AutoAck:     false,
+		Exclusive:   false,
+		NoLocal:     false,
+		NoWait:      false,
+		Args:        nil,
 	}, "test-receiver")
 
 	b := bus.New(middleware.Stack(
@@ -183,10 +183,10 @@ func startSender(ctx context.Context, messagesToSend [][]byte) error {
 		_ = ch.Close()
 	}(ch)
 	s := Sender(ch, PublishArgs{
-		exchange:   "sender.messages",
-		routingKey: "messages",
-		mandatory:  false,
-		immediate:  false,
+		Exchange:   "sender.messages",
+		RoutingKey: "messages",
+		Mandatory:  false,
+		Immediate:  false,
 	})
 
 	b := bus.New(middleware.Stack(
