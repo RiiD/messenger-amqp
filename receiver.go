@@ -10,8 +10,6 @@ import (
 )
 
 var ErrInvalidAlias = errors.New("invalid alias")
-var ErrNotAcked = errors.New("envelope is not acked")
-var ErrNotNacked = errors.New("envelope is not nacked")
 
 type ConsumeOptions struct {
 	Queue       string
@@ -76,9 +74,6 @@ func (r *receiver) Ack(_ context.Context, e messenger.Envelope) error {
 	if strings.Compare(alias, r.alias) != 0 {
 		return ErrInvalidAlias
 	}
-	if !HasAck(e) {
-		return ErrNotAcked
-	}
 	return r.channel.Ack(deliveryTag, false)
 }
 
@@ -89,9 +84,6 @@ func (r *receiver) Nack(_ context.Context, e messenger.Envelope) error {
 	}
 	if strings.Compare(alias, r.alias) != 0 {
 		return ErrInvalidAlias
-	}
-	if !HasNack(e) {
-		return ErrNotNacked
 	}
 	return r.channel.Nack(deliveryTag, false, false)
 }

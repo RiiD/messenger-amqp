@@ -60,17 +60,6 @@ func TestReceiver_Ack_when_called_on_envelope_with_wrong_receiver_alias_should_r
 	assert.Same(t, ErrInvalidAlias, err)
 }
 
-func TestReceiver_Ack_when_called_on_envelope_that_without_acked_header_should_return_error(t *testing.T) {
-	ch := &mockChannel{}
-	r := Receiver(ch, ConsumeOptions{}, "test-alias")
-	ctx := context.Background()
-	e := withReceived(envelope.FromMessage("test message"), "test-alias", 123)
-
-	err := r.Ack(ctx, e)
-
-	assert.Same(t, ErrNotAcked, err)
-}
-
 func TestReceiver_Ack_when_called_on_matching_envelope_with_acked_header_should_call_channel_ack(t *testing.T) {
 	ch := &mockChannel{}
 	ch.On("Ack", uint64(123), false).Return(nil)
@@ -78,7 +67,6 @@ func TestReceiver_Ack_when_called_on_matching_envelope_with_acked_header_should_
 	ctx := context.Background()
 	var e messenger.Envelope = envelope.FromMessage("test message")
 	e = withReceived(e, "test-alias", 123)
-	e = WithAck(e)
 
 	err := r.Ack(ctx, e)
 
@@ -95,7 +83,6 @@ func TestReceiver_Ack_channel_ack_returns_error_it_should_return_the_same_error(
 	ctx := context.Background()
 	var e messenger.Envelope = envelope.FromMessage("test message")
 	e = withReceived(e, "test-alias", 123)
-	e = WithAck(e)
 
 	err := r.Ack(ctx, e)
 
@@ -113,17 +100,6 @@ func TestReceiver_Nack_when_called_on_envelope_with_wrong_receiver_alias_should_
 	assert.Same(t, ErrInvalidAlias, err)
 }
 
-func TestReceiver_Nack_when_called_on_envelope_without_nack_header_should_return_error(t *testing.T) {
-	ch := &mockChannel{}
-	r := Receiver(ch, ConsumeOptions{}, "test-alias")
-	ctx := context.Background()
-	e := withReceived(envelope.FromMessage("test message"), "test-alias", 123)
-
-	err := r.Nack(ctx, e)
-
-	assert.Same(t, ErrNotNacked, err)
-}
-
 func TestReceiver_Nack_when_called_on_matching_envelope_with_nack_header_should_call_channel_nack(t *testing.T) {
 	ch := &mockChannel{}
 	ch.On("Nack", uint64(123), false, false).Return(nil)
@@ -131,7 +107,6 @@ func TestReceiver_Nack_when_called_on_matching_envelope_with_nack_header_should_
 	ctx := context.Background()
 	var e messenger.Envelope = envelope.FromMessage("test message")
 	e = withReceived(e, "test-alias", 123)
-	e = WithNack(e)
 
 	err := r.Nack(ctx, e)
 
@@ -148,7 +123,6 @@ func TestReceiver_Nack_channel_ack_returns_error_it_should_return_the_same_error
 	ctx := context.Background()
 	var e messenger.Envelope = envelope.FromMessage("test message")
 	e = withReceived(e, "test-alias", 123)
-	e = WithNack(e)
 
 	err := r.Nack(ctx, e)
 
