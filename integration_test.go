@@ -24,6 +24,9 @@ func TestIntegration(t *testing.T) {
 		t.Skip()
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGKILL)
+	ctx, cancel = context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	messagesToSend := make([][]byte, numberOfMessages)
 	for i := 0; i < len(messagesToSend); i++ {
 		messagesToSend[i] = []byte(fmt.Sprintf("message %d", i))
@@ -44,6 +47,10 @@ func TestIntegration(t *testing.T) {
 	}()
 
 	r := make(chan messenger.Envelope)
+	go func() {
+		<-ctx.Done()
+		close(r)
+	}()
 
 	go func() {
 		receiverErr = startReceiver(ctx, r)
@@ -52,17 +59,17 @@ func TestIntegration(t *testing.T) {
 
 	receivedMessages := make([][]byte, numberOfMessages)
 	count := 0
+
 	for e := range r {
 		id, err := envelope.Int(e, "x-index")
 		assert.Nil(t, err)
 		receivedMessages[id] = e.Message().([]byte)
 		count += 1
 		if count == numberOfMessages {
-			close(r)
+			cancel()
 		}
 	}
 
-	cancel()
 	wg.Wait()
 
 	assert.Same(t, context.Canceled, senderErr)
@@ -183,10 +190,9 @@ func startSender(ctx context.Context, messagesToSend [][]byte) error {
 		_ = ch.Close()
 	}(ch)
 	s := Sender(ch, PublishArgs{
-		Exchange:   "sender.messages",
-		RoutingKey: "messages",
-		Mandatory:  false,
-		Immediate:  false,
+		Exchange:  "sender.messages",
+		Mandatory: false,
+		Immediate: false,
 	})
 
 	b := bus.New(middleware.Stack(
@@ -197,14 +203,11 @@ func startSender(ctx context.Context, messagesToSend [][]byte) error {
 	wg.Add(2)
 	go func() {
 		for i, bytes := range messagesToSend {
-			b.Dispatch(
-				ctx,
-				envelope.WithInt(
-					envelope.FromMessage(bytes),
-					"x-index",
-					i,
-				),
-			)
+			var e messenger.Envelope = envelope.FromMessage(bytes)
+			e = envelope.WithInt(e, "x-index", i)
+			e = WithRoutingKey(e, "messages")
+
+			b.Dispatch(ctx, e)
 		}
 		wg.Done()
 	}()

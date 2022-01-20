@@ -11,10 +11,9 @@ import (
 )
 
 type PublishArgs struct {
-	Exchange   string
-	RoutingKey string
-	Mandatory  bool
-	Immediate  bool
+	Exchange  string
+	Mandatory bool
+	Immediate bool
 }
 
 func Sender(channel Channel, publishArgs PublishArgs) *sender {
@@ -30,6 +29,9 @@ type sender struct {
 }
 
 func (s *sender) Send(_ context.Context, e messenger.Envelope) error {
+	routingKey := RoutingKey(e)
+	e = WithoutRoutingKey(e)
+
 	msg, err := createAMQPMessageFromEnvelope(e)
 	if err != nil {
 		return err
@@ -37,7 +39,7 @@ func (s *sender) Send(_ context.Context, e messenger.Envelope) error {
 
 	err = s.channel.Publish(
 		s.publishArgs.Exchange,
-		s.publishArgs.RoutingKey,
+		routingKey,
 		s.publishArgs.Mandatory,
 		s.publishArgs.Immediate,
 		msg,
