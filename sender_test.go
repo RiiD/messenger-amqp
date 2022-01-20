@@ -25,6 +25,7 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 	e = envelope.WithUserID(e, "test-user-id")
 	e = envelope.WithAppID(e, "test-app-id")
 	e = envelope.WithHeader(e, "x-custom-header", "test value")
+	e = WithRoutingKey(e, "test-routing-key")
 
 	expectedPublishing := amqp.Publishing{
 		Headers: amqp.Table{
@@ -46,10 +47,9 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 	ch.On("Publish", "test-exchange", "test-routing-key", false, false, expectedPublishing).Return(nil)
 
 	sender := Sender(ch, PublishArgs{
-		Exchange:   "test-exchange",
-		RoutingKey: "test-routing-key",
-		Mandatory:  false,
-		Immediate:  false,
+		Exchange:  "test-exchange",
+		Mandatory: false,
+		Immediate: false,
 	})
 
 	err := sender.Send(ctx, e)
@@ -70,17 +70,16 @@ func TestSender_Send_when_amqp_publish_fails_should_return_error(t *testing.T) {
 	expectedError := errors.New("test error")
 
 	ch := &mockChannel{}
-	ch.On("Publish", "test-exchange", "test-routing-key", true, true, expectedPublishing).Return(expectedError)
+	ch.On("Publish", "test-exchange", "", true, true, expectedPublishing).Return(expectedError)
 
 	sender := Sender(ch, PublishArgs{
-		Exchange:   "test-exchange",
-		RoutingKey: "test-routing-key",
-		Mandatory:  true,
-		Immediate:  true,
+		Exchange:  "test-exchange",
+		Mandatory: true,
+		Immediate: true,
 	})
 
 	err := sender.Send(ctx, e)
 
 	assert.Same(t, expectedError, err)
-	ch.AssertCalled(t, "Publish", "test-exchange", "test-routing-key", true, true, expectedPublishing)
+	ch.AssertCalled(t, "Publish", "test-exchange", "", true, true, expectedPublishing)
 }
