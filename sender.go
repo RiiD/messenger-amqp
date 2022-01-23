@@ -97,7 +97,7 @@ func createAMQPMessageFromEnvelope(e messenger.Envelope) (amqp.Publishing, error
 
 	envelopeHeaders := e.Headers()
 	headers := make(amqp.Table, len(envelopeHeaders))
-	for name, hh := range e.Headers() {
+	for name, hh := range envelopeHeaders {
 		ii := make([]interface{}, len(hh))
 		for i := 0; i < len(ii); i++ {
 			ii[i] = hh[i]

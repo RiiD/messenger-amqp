@@ -18,6 +18,7 @@ import (
 )
 
 const numberOfMessages = 1028
+const amqpURL = "amqp://rabbitmq:5672"
 
 func TestIntegration(t *testing.T) {
 	if testing.Short() {
@@ -64,6 +65,19 @@ func TestIntegration(t *testing.T) {
 		id, err := envelope.Int(e, "x-index")
 		assert.Nil(t, err)
 		receivedMessages[id] = e.Message().([]byte)
+
+		ui, err := envelope.Int64(e, "x-test-uint")
+		assert.Nil(t, err)
+		assert.Equal(t, int64(222), ui)
+
+		f, err := envelope.Float64(e, "x-test-float")
+		assert.Nil(t, err)
+		assert.Equal(t, 111.111, f)
+
+		s, found := e.LastHeader("x-test-string")
+		assert.True(t, found)
+		assert.Equal(t, "test", s)
+
 		count += 1
 		if count == numberOfMessages {
 			cancel()
@@ -81,7 +95,7 @@ func prepareRmq() error {
 	var conn *amqp.Connection
 	var err error
 	for i := 0; i < 3; i++ {
-		conn, err = amqp.Dial("amqp://rabbitmq:5672")
+		conn, err = amqp.Dial(amqpURL)
 		if err != nil {
 			<-time.After(3 * time.Second)
 			continue
@@ -122,7 +136,7 @@ func prepareRmq() error {
 }
 
 func startReceiver(ctx context.Context, received chan messenger.Envelope) error {
-	conn, err := amqp.Dial("amqp://rabbitmq:5672")
+	conn, err := amqp.Dial(amqpURL)
 	if err != nil {
 		return err
 	}
@@ -174,7 +188,7 @@ func startReceiver(ctx context.Context, received chan messenger.Envelope) error 
 }
 
 func startSender(ctx context.Context, messagesToSend [][]byte) error {
-	conn, err := amqp.Dial("amqp://rabbitmq:5672")
+	conn, err := amqp.Dial(amqpURL)
 	if err != nil {
 		return err
 	}
@@ -205,6 +219,9 @@ func startSender(ctx context.Context, messagesToSend [][]byte) error {
 		for i, bytes := range messagesToSend {
 			var e messenger.Envelope = envelope.FromMessage(bytes)
 			e = envelope.WithInt(e, "x-index", i)
+			e = envelope.WithUint64(e, "x-test-uint", 222)
+			e = envelope.WithFloat64(e, "x-test-float", 111.111)
+			e = envelope.WithHeader(e, "x-test-string", "test")
 			e = WithRoutingKey(e, "messages")
 
 			b.Dispatch(ctx, e)

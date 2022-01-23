@@ -137,20 +137,22 @@ func (r *receiver) envelopeFromAMQPDelivery(delivery amqp.Delivery) messenger.En
 
 	headers := make(map[string][]string, len(delivery.Headers))
 	for name, values := range delivery.Headers {
-		vv, ok := values.([]interface{})
-		if !ok {
-			continue
-		}
+		switch values.(type) {
+		case []string:
+			headers[name] = values.([]string)
+		case []interface{}:
+			vv := values.([]interface{})
+			headers[name] = make([]string, len(vv))
+			for i, v := range vv {
+				strValue, ok := v.(string)
+				if !ok {
+					continue
+				}
 
-		headers[name] = make([]string, len(vv))
-		for i, v := range vv {
-			strValue, ok := v.(string)
-			if !ok {
-				continue
+				headers[name][i] = strValue
 			}
-
-			headers[name][i] = strValue
 		}
+
 	}
 
 	return envelope.WithHeaders(e, headers)
