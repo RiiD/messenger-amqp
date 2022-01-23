@@ -72,7 +72,7 @@ func TestReceiver_Ack_when_called_on_matching_envelope_with_acked_header_should_
 
 	err := r.Ack(ctx, e)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	ch.AssertCalled(t, "Ack", uint64(123), false)
 }
 
@@ -112,7 +112,7 @@ func TestReceiver_Nack_when_called_on_matching_envelope_with_nack_header_should_
 
 	err := r.Nack(ctx, e)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	ch.AssertCalled(t, "Nack", uint64(123), false, false)
 }
 
@@ -170,7 +170,7 @@ func TestReceiver_Receive(t *testing.T) {
 
 	rch, err := receiver.Receive(ctx)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	e := <-rch
 
@@ -181,7 +181,7 @@ func TestReceiver_Receive(t *testing.T) {
 	alias, tag, err := received(e)
 	assert.Equal(t, "test-alias", alias)
 	assert.Equal(t, uint64(123), tag)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	ct := envelope.ContentType(e)
 	assert.Equal(t, "test content type", ct)
@@ -198,7 +198,7 @@ func TestReceiver_Receive(t *testing.T) {
 	ts, err := envelope.Timestamp(e)
 
 	assert.True(t, ts.Equal(now))
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	uid := envelope.UserID(e)
 	assert.Equal(t, "test user id", uid)

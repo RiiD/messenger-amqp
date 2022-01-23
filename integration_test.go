@@ -63,15 +63,15 @@ func TestIntegration(t *testing.T) {
 
 	for e := range r {
 		id, err := envelope.Int(e, "x-index")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		receivedMessages[id] = e.Message().([]byte)
 
 		ui, err := envelope.Int64(e, "x-test-uint")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, int64(222), ui)
 
 		f, err := envelope.Float64(e, "x-test-float")
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, 111.111, f)
 
 		s, found := e.LastHeader("x-test-string")

@@ -29,7 +29,7 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 
 	expectedPublishing := amqp.Publishing{
 		Headers: amqp.Table{
-			"x-custom-header": []interface{}{"test value"},
+			"x-custom-array": []interface{}{"test value"},
 		},
 		ContentType:   "test-content-type",
 		CorrelationId: "test-correlation-id",
@@ -54,7 +54,7 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 
 	err := sender.Send(ctx, e)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	ch.AssertCalled(t, "Publish", "test-exchange", "test-routing-key", false, false, expectedPublishing)
 }
 
