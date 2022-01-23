@@ -7,6 +7,8 @@ import (
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
+	"math"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -138,7 +140,20 @@ func TestReceiver_Receive(t *testing.T) {
 
 	dd <- amqp.Delivery{
 		Headers: amqp.Table{
-			"X-Custom-Header": []string{"test value1", "test value2"},
+			"X-Custom-String": "test value",
+
+			"X-Custom-Int":   math.MinInt,
+			"X-Custom-Int8":  math.MinInt8,
+			"X-Custom-Int16": math.MinInt16,
+			"X-Custom-Int32": math.MinInt32,
+			"X-Custom-Int64": math.MinInt64,
+
+			"X-Custom-Float32": float32(math.MaxFloat32),
+			"X-Custom-Float64": math.MaxFloat64,
+
+			"X-Custom-String-Array": []string{"test value1", "test value2"},
+			"X-Custom-Int-Array":    []int{math.MinInt, math.MaxInt},
+			"X-Custom-Float-Array":  []float64{math.MaxFloat64},
 		},
 		ContentType:     "test content type",
 		ContentEncoding: "test content encoding",
@@ -174,9 +189,37 @@ func TestReceiver_Receive(t *testing.T) {
 
 	e := <-rch
 
-	customHeader, found := e.LastHeader("X-Custom-Header")
-	assert.True(t, found)
-	assert.Equal(t, "test value2", customHeader)
+	customString := e.Header("X-Custom-String")
+	assert.Equal(t, []string{"test value"}, customString)
+
+	customInt := e.Header("X-Custom-Int")
+	assert.Equal(t, []string{strconv.FormatInt(math.MinInt, 10)}, customInt)
+	customInt8 := e.Header("X-Custom-Int8")
+	assert.Equal(t, []string{strconv.FormatInt(math.MinInt8, 10)}, customInt8)
+	customInt16 := e.Header("X-Custom-Int16")
+	assert.Equal(t, []string{strconv.FormatInt(math.MinInt16, 10)}, customInt16)
+	customInt32 := e.Header("X-Custom-Int32")
+	assert.Equal(t, []string{strconv.FormatInt(math.MinInt32, 10)}, customInt32)
+	customInt64 := e.Header("X-Custom-Int64")
+	assert.Equal(t, []string{strconv.FormatInt(math.MinInt64, 10)}, customInt64)
+
+	customFloat32, err := envelope.Float32(e, "X-Custom-Float32")
+	assert.NoError(t, err)
+	assert.Equal(t, float32(math.MaxFloat32), customFloat32)
+	customFloat64, err := envelope.Float64(e, "X-Custom-Float64")
+	assert.NoError(t, err)
+	assert.Equal(t, math.MaxFloat64, customFloat64)
+
+	customStringArray := e.Header("X-Custom-String-Array")
+	assert.Equal(t, []string{"test value1", "test value2"}, customStringArray)
+
+	customIntArray := e.Header("X-Custom-Int-Array")
+	assert.Equal(t, []string{strconv.FormatInt(math.MinInt, 10), strconv.FormatInt(math.MaxInt, 10)}, customIntArray)
+
+	customFloatArray := e.Header("X-Custom-Float-Array")
+	assert.Equal(t, []string{
+		strconv.FormatFloat(math.MaxFloat64, 'g', -1, 64),
+	}, customFloatArray)
 
 	alias, tag, err := received(e)
 	assert.Equal(t, "test-alias", alias)

@@ -6,6 +6,7 @@ import (
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
+	"strconv"
 	"strings"
 )
 
@@ -137,11 +138,66 @@ func (r *receiver) envelopeFromAMQPDelivery(delivery amqp.Delivery) messenger.En
 
 	headers := make(map[string][]string, len(delivery.Headers))
 	for name, values := range delivery.Headers {
-		switch values.(type) {
+		switch vv := values.(type) {
+
+		case int:
+			headers[name] = []string{strconv.FormatInt(int64(vv), 10)}
+		case int8:
+			headers[name] = []string{strconv.FormatInt(int64(vv), 10)}
+		case int16:
+			headers[name] = []string{strconv.FormatInt(int64(vv), 10)}
+		case int32:
+			headers[name] = []string{strconv.FormatInt(int64(vv), 10)}
+		case int64:
+			headers[name] = []string{strconv.FormatInt(vv, 10)}
+
+		case float32:
+			headers[name] = []string{strconv.FormatFloat(float64(vv), 'g', -1, 32)}
+		case float64:
+			headers[name] = []string{strconv.FormatFloat(vv, 'g', -1, 64)}
+		case []float32:
+			headers[name] = make([]string, len(vv))
+			for i, f := range vv {
+				headers[name][i] = strconv.FormatFloat(float64(f), 'g', -1, 32)
+			}
+		case []float64:
+			headers[name] = make([]string, len(vv))
+			for i, f := range vv {
+				headers[name][i] = strconv.FormatFloat(f, 'g', -1, 64)
+			}
+
+		case []int:
+			headers[name] = make([]string, len(vv))
+			for i, v := range vv {
+				headers[name][i] = strconv.FormatInt(int64(v), 10)
+			}
+		case []int8:
+			headers[name] = make([]string, len(vv))
+			for i, v := range vv {
+				headers[name][i] = strconv.FormatInt(int64(v), 10)
+			}
+		case []int16:
+			headers[name] = make([]string, len(vv))
+			for i, v := range vv {
+				headers[name][i] = strconv.FormatInt(int64(v), 10)
+			}
+		case []int32:
+			headers[name] = make([]string, len(vv))
+			for i, v := range vv {
+				headers[name][i] = strconv.FormatInt(int64(v), 10)
+			}
+		case []int64:
+			headers[name] = make([]string, len(vv))
+			for i, v := range vv {
+				headers[name][i] = strconv.FormatInt(v, 10)
+			}
+
+		case string:
+			headers[name] = []string{vv}
+
 		case []string:
-			headers[name] = values.([]string)
+			headers[name] = vv
 		case []interface{}:
-			vv := values.([]interface{})
 			headers[name] = make([]string, len(vv))
 			for i, v := range vv {
 				strValue, ok := v.(string)
