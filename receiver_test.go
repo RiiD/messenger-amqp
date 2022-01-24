@@ -7,6 +7,7 @@ import (
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"math"
 	"strconv"
 	"testing"
@@ -185,7 +186,7 @@ func TestReceiver_Receive(t *testing.T) {
 
 	rch, err := receiver.Receive(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	e := <-rch
 
