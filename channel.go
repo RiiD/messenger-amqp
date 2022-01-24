@@ -23,7 +23,7 @@ func (m *mockChannel) Publish(exchange, key string, mandatory, immediate bool, m
 
 func (m *mockChannel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error) {
 	called := m.Called(queue, consumer, autoAck, exclusive, noLocal, noWait, args)
-	if ch, ok := called.Get(0).(<-chan amqp.Delivery); ok {
+	if ch, ok := called.Get(0).(chan amqp.Delivery); ok {
 		return ch, called.Error(1)
 	}
 	return nil, called.Error(1)

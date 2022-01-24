@@ -23,5 +23,5 @@ func TestReceived_given_envelope_with_alias_and_delivery_tag_when_called_receive
 
 	assert.Equal(t, "test-alias", alias)
 	assert.Equal(t, uint64(123), deliveryTag)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
