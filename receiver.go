@@ -3,11 +3,12 @@ package messenger_amqp
 import (
 	"context"
 	"errors"
+	"strconv"
+	"strings"
+
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
-	"strconv"
-	"strings"
 )
 
 var ErrInvalidAlias = errors.New("invalid alias")
@@ -134,6 +135,10 @@ func (r *receiver) envelopeFromAMQPDelivery(delivery amqp.Delivery) messenger.En
 
 	if delivery.Type != "" {
 		e = envelope.WithMessageType(e, delivery.Type)
+	}
+
+	if delivery.RoutingKey != "" {
+		e = WithRoutingKey(e, delivery.RoutingKey)
 	}
 
 	headers := make(map[string][]string, len(delivery.Headers))

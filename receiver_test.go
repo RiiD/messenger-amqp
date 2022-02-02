@@ -3,15 +3,16 @@ package messenger_amqp
 import (
 	"context"
 	"errors"
+	"math"
+	"strconv"
+	"testing"
+	"time"
+
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"math"
-	"strconv"
-	"testing"
-	"time"
 )
 
 func TestReceiver_Matches(t *testing.T) {
@@ -168,6 +169,7 @@ func TestReceiver_Receive(t *testing.T) {
 		AppId:           "test app id",
 		ConsumerTag:     "test consumer tag",
 		DeliveryTag:     123,
+		RoutingKey:      "test routing key",
 	}
 
 	close(dd)
@@ -252,4 +254,7 @@ func TestReceiver_Receive(t *testing.T) {
 
 	mt := envelope.MessageType(e)
 	assert.Equal(t, "test message type", mt)
+
+	rk := RoutingKey(e)
+	assert.Equal(t, "test routing key", rk)
 }
