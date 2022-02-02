@@ -3,6 +3,14 @@ package messenger_amqp
 import (
 	"context"
 	"fmt"
+	"log"
+	"math"
+	"os/signal"
+	"sync"
+	"syscall"
+	"testing"
+	"time"
+
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/bridge"
 	"github.com/riid/messenger/bus"
@@ -11,13 +19,6 @@ import (
 	"github.com/riid/messenger/middleware"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
-	"log"
-	"math"
-	"os/signal"
-	"sync"
-	"syscall"
-	"testing"
-	"time"
 )
 
 const numberOfMessages = 1028
@@ -85,6 +86,7 @@ func TestIntegration(t *testing.T) {
 		toSend := WithoutRoutingKey(messagesToSend[i])
 		var received messenger.Envelope = envelope.WithoutHeader(receivedMessages[i], deliveryTagHeader)
 		received = envelope.WithoutHeader(received, receiverAliasHeaderName)
+		received = WithoutRoutingKey(received)
 
 		assert.Equal(t, toSend.Message(), received.Message())
 		assert.Equal(t, toSend.Headers(), received.Headers())
