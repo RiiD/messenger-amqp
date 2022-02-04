@@ -101,6 +101,8 @@ func (r *receiver) Matches(e messenger.Envelope) bool {
 func (r *receiver) envelopeFromAMQPDelivery(delivery amqp.Delivery) messenger.Envelope {
 	var e messenger.Envelope = envelope.FromMessage(delivery.Body)
 
+	e = envelope.WithHeaders(e, extractHeadersFromAMQPDelivery(delivery.Headers))
+
 	e = withReceived(e, r.alias, delivery.DeliveryTag)
 
 	if delivery.ContentType != "" {
@@ -141,8 +143,12 @@ func (r *receiver) envelopeFromAMQPDelivery(delivery amqp.Delivery) messenger.En
 		e = WithRoutingKey(e, delivery.RoutingKey)
 	}
 
-	headers := make(map[string][]string, len(delivery.Headers))
-	for name, values := range delivery.Headers {
+	return e
+}
+
+func extractHeadersFromAMQPDelivery(amqpHeaders amqp.Table) map[string][]string {
+	headers := make(map[string][]string, len(amqpHeaders))
+	for name, values := range amqpHeaders {
 		switch vv := values.(type) {
 
 		case int:
@@ -213,8 +219,7 @@ func (r *receiver) envelopeFromAMQPDelivery(delivery amqp.Delivery) messenger.En
 				headers[name][i] = strValue
 			}
 		}
-
 	}
 
-	return envelope.WithHeaders(e, headers)
+	return headers
 }
