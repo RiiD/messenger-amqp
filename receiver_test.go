@@ -153,9 +153,19 @@ func TestReceiver_Receive(t *testing.T) {
 			"X-Custom-Float32": float32(math.MaxFloat32),
 			"X-Custom-Float64": math.MaxFloat64,
 
-			"X-Custom-String-Array": []string{"test value1", "test value2"},
-			"X-Custom-Int-Array":    []int{math.MinInt, math.MaxInt},
-			"X-Custom-Float-Array":  []float64{math.MaxFloat64},
+			"X-Custom-String-Array": []string{
+				"test value1",
+				"test value2",
+			},
+			"X-Custom-Int-Array": []int{
+				math.MinInt,
+				math.MaxInt,
+			},
+			"X-Custom-Float-Array": []float64{math.MaxFloat64},
+
+			routingKeyHeaderName:    "test original routing key",
+			deliveryTagHeader:       "456",
+			receiverAliasHeaderName: "test original consumer tag",
 		},
 		ContentType:     "test content type",
 		ContentEncoding: "test content encoding",
