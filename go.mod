@@ -3,7 +3,7 @@ module github.com/riid/messenger-amqp
 go 1.17
 
 require (
-	github.com/riid/messenger v0.0.0-20220109222202-fb9188ec4453
+	github.com/riid/messenger v1.2.0
 	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.0
 )

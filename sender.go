@@ -3,11 +3,12 @@ package messenger_amqp
 import (
 	"context"
 	"errors"
+	"strconv"
+	"time"
+
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
-	"strconv"
-	"time"
 )
 
 type PublishArgs struct {
@@ -95,6 +96,9 @@ func createAMQPMessageFromEnvelope(e messenger.Envelope) (amqp.Publishing, error
 	messageType := envelope.MessageType(e)
 	e = envelope.WithoutMessageType(e)
 
+	priority := uint8(envelope.Priority(e))
+	e = envelope.WithoutPriority(e)
+
 	envelopeHeaders := e.Headers()
 	headers := make(amqp.Table, len(envelopeHeaders))
 	for name, hh := range envelopeHeaders {
@@ -109,6 +113,7 @@ func createAMQPMessageFromEnvelope(e messenger.Envelope) (amqp.Publishing, error
 	return amqp.Publishing{
 		Headers:       headers,
 		ContentType:   contentType,
+		Priority:      priority,
 		CorrelationId: correlationID,
 		ReplyTo:       replyTo,
 		Expiration:    expirationStr,

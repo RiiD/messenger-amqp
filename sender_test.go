@@ -3,12 +3,13 @@ package messenger_amqp
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serialize_it_and_publish_to_channel(t *testing.T) {
@@ -24,6 +25,7 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 	e = envelope.WithMessageType(e, "test-message-type")
 	e = envelope.WithUserID(e, "test-user-id")
 	e = envelope.WithAppID(e, "test-app-id")
+	e = envelope.WithPriority(e, 10)
 	e = envelope.WithHeader(e, "x-custom-header", "test value")
 	e = WithRoutingKey(e, "test-routing-key")
 
@@ -40,6 +42,7 @@ func TestSender_Send_given_valid_amqp_channel_called_with_envelope_should_serial
 		Type:          "test-message-type",
 		UserId:        "test-user-id",
 		AppId:         "test-app-id",
+		Priority:      uint8(10),
 		Body:          []byte("test message"),
 	}
 
